@@ -17,6 +17,40 @@ app.post("/api/login", (req, res) => {
   });
 });
 
+
+app.post("/api/amauntLayakPotong", async (req, res) => {
+  let connection;
+
+  try {
+    connection = await oracledb.getConnection(dbConfig);
+    const result = await connection.execute(
+      `
+      SELECT LAY_BAKILAYAK 
+      FROM SADM.VPY_GAJILAYAK
+      WHERE LAY_PAYNUMBER= :value
+      OR LAY_STAFNEWIC = :value
+      `,
+      {value:req.body.value},
+      { outFormat: oracledb.OUT_FORMAT_OBJECT }
+    );
+
+    res.send(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.send(err);
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (err) {
+        console.error(err);
+        res.send(err);
+      }
+    }
+  }
+});
+
+
 //http://localhost:3333/api/lokasi
 
 app.get("/api/lokasi", async (req, res) => {
